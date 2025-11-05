@@ -3,7 +3,7 @@ const Product = (props) => {
         <>
             <div>
                 <h3>상품명:{props.productName}</h3>
-                <p>가격:원{props.price}</p>
+                <p>가격:{props.price}원</p>
             </div>
         </>
     );
