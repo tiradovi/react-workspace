@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-// 자식 1: 섭씨 입력
 const CelsiusInput = ({ value, handler }) => {
     return (
         <div>
@@ -11,7 +10,6 @@ const CelsiusInput = ({ value, handler }) => {
     );
 }
 
-// 자식 2: 화씨 표시
 const FahrenheitDisplay = ({ celsius }) => {
     const fahrenheit = (celsius * 1.8) + 32;
     return (
@@ -21,7 +19,6 @@ const FahrenheitDisplay = ({ celsius }) => {
     );
 }
 
-// 자식 3: 캘빈 표시
 const KelvinDisplay = ({ celsius }) => {
     const kelvin = parseFloat(celsius) + 273.15;
     return (
@@ -31,7 +28,6 @@ const KelvinDisplay = ({ celsius }) => {
     );
 }
 
-// 부모 컴포넌트
 const TemperatureConverter = () => {
     const [celsius, setCelsius] = useState('');
 
