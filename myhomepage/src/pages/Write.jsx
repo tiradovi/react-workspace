@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 
@@ -56,7 +56,7 @@ const Write = () => {
                            required/>
                 </label>
                 <label>내용:
-                    <input id="content"
+                    <textarea id="content"
                            name="content"
                            value={formData.content}
                            onChange={handleChange}
