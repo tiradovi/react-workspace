@@ -11,8 +11,8 @@ const Main = () => {
             // 1. 어떤 언어 코드에서든 하나의 기능을 작성할 경우 {} 생략
             // .then(res => res.data)
             .then((res) => {
-                console.log(res.data);
                 setBoard(res.data);
+                console.log(res.data);
             })
             .catch(e => {
                 alert("데이터 가져오기 실패");
@@ -35,7 +35,6 @@ const Main = () => {
             <p>{회사가원하는날짜표현}  인기글 목록</p>
             {/* 7단계: 여기에 axios로 /api/board/popular를 호출하는 로직 추가 */}
             <ul>
-
                 {/* html 내부에서는 {} 는 자바스크립트에서 선언한 변수 이름 상수 이름 기능 구현*/}
                 {board.map(b => (
                     <li>{b.title} </li>
