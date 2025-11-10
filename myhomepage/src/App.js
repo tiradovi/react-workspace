@@ -41,6 +41,48 @@ function App() {
                 <Route path="/mypage" element={<MyPage/>}/>
                 <Route path="/write" element={<Write/>}/>
             </Routes>
+
+
+            <footer className="footer">
+                <div className="footer-content">
+                    <div className="footer-section">
+                        <h3>myhomepage</h3>
+                        <p>&copy; 2025 All right reserved.</p>
+                    </div>
+                    <div className="footer-section">
+                        {/*
+                    React에서는 a 태그 대신 Link 태그를 사용하지만
+                    Link 태그는 웹페이지에서 a태그로 변환됨
+                    따라서 css 적용시 Link 태그 대신 a 태그에 css 적용
+                    Link 태그 내부에 a 태그 속성 존재
+                    a 태그의 경우 리액트에 맞추어 변환시켜 Link 태그 형태로 사용하는 것
+
+
+                    .footer-section a { 메인 게시판 글쓰기에 적용되는 스타일시트
+                        display: block;
+                        color: #bdc3c7;
+                        text-decoration: none;
+                        margin: 5px 0;
+                        transition: color 0.3s;
+                    }
+
+                    .footer-section a:hover {
+                        color: #3498db;
+                    }
+                    */}
+                        <h4>링크</h4>
+                        <Link to="/">메인</Link>
+                        <Link to="/board">게시판</Link>
+                        <Link to="/write">글쓰기</Link>
+                    </div>
+                    <div className="footer-section">
+                        <h4>문의</h4>
+                        <p>Email : contact@myhomepage.com</p>
+                        <p>Tel : 02-1234-5678</p>
+                    </div>
+                </div>
+            </footer>
+
         </div>
     );
 }
