@@ -43,7 +43,7 @@ const Board = () => {
             </div>
 
             <div className="board-info">
-                <p>전체 게시물: 개</p>
+                <p>전체 게시물: {boards.length}개</p>
             </div>
 
             <table className="board-table">
@@ -82,7 +82,7 @@ const Board = () => {
                         <td onClick={() => handleIDClick(b.id)}>{b.title}</td>
                         <td>{b.writer}</td>
                         <td>{b.viewCount}</td>
-                        <td>{b.createdAt}</td> {/* 2025-11-07 11:38:18  -> 2025-11-07*/}
+                        <td>{b.createdAt}</td>
                     </tr>
                 ))}
                 </tbody>
