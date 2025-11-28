@@ -16,7 +16,8 @@
     "react-scripts": "5.0.1",
     "serve": "^14.2.5",
     "sockjs-client": "^1.6.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "webpack-dev-server": "^4.13.3"
   },
   "scripts": {
     "start": "react-scripts start",

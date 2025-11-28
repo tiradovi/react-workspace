@@ -10,54 +10,58 @@
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
+import { goToPage, renderLoading} from "../service/commonService";
+import {fetchAllBoards} from "../service/ApiService";
 
 const Board = () => {
-    const navigate = useNavigate();
-    const [boards, setBoards] = useState([]);
-    useEffect(() => {
-        axios
-            .get("http://localhost:8085/api/board/all")
-            .then(res =>{
-                console.log("1. boards : ", boards);
-                // res.data 백엔드에서 가져온 데이터를
-                // boards 에 넣어주기 전 이므로, 데이터가 0 인 상태가 맞음
-                console.log("백엔드에서 가져온 데이터 : ", res.data);
-                console.log("백엔드에서 가져온 데이터를 boards 에 저장 : ", setBoards(res.data));
-                setBoards(res.data); // boards 변수이름에 데이터 저장기능 실행
-                console.log("2. boards : ", boards);
-            })
-            .catch( e => alert("데이터를 가져올 수 없습니다.")); // {} 생략
-    }, []);
+  const navigate = useNavigate();
+  const [boards, setBoards] = useState([]);
+  // 데이터를 가져오기 전이기 때문에 로딩 활성화 상태로 설정
+  const [loading, setLoading] = useState(true);
 
-    const handleIDClick = (id) => {
-        navigate(`/board/${id}`);
-    }
 
-    return (
-        <div className="page-container">
-            <div className="board-header">
-                <h1>게시판</h1>
-                <button className="button">
-                    글쓰기
-                </button>
-            </div>
+  useEffect(() => {
+    // 백엔드 호출할 때 axios, 백엔드에서 res.data를 담아올 setBoards 변수이름만 전달, setLoading = true 형태로 전달
+    fetchAllBoards(axios,   setBoards, setLoading);
+  }, []);
 
-            <div className="board-info">
-                <p>전체 게시물: {boards.length}개</p>
-            </div>
+  if(loading) return renderLoading('게시물 가져오는 중');
 
-            <table className="board-table">
-                <thead>
-                <tr>
-                    <th>번호</th>
-                    <th>제목</th>
-                    <th>작성자</th>
-                    <th>조회수</th>
-                    <th>작성일</th>
-                </tr>
-                </thead>
-                <tbody>
-                {/*
+  /*
+  * 게시물이 하나도 존재하지 않을 경우
+  * 둘 중 편한 방법 사용
+  *
+  *  1. board 가 없는게 사실이라면 renderLoading 이용해서 상품을 찾을 수 없습니다. 표기
+  *
+  *  2. 삼항연산자를 이용해서 게시물의 length가 0 이하라면 false 에 renderLoading 표기 가능
+  *
+  *
+  * */
+  return (
+      <div className="page-container">
+        <div className="board-header">
+          <h1>게시판</h1>
+          <button className="button" onClick={() =>goToPage(navigate, '/witer')}>
+            글쓰기
+          </button>
+        </div>
+
+        <div className="board-info">
+          <p>전체 게시물: {boards.length}개</p>
+        </div>
+
+        <table className="board-table">
+          <thead>
+          <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>조회수</th>
+            <th>작성일</th>
+          </tr>
+          </thead>
+          <tbody>
+          {/*
                         content: "nice to meet you!"
                         createdAt: "2025-11-07 11:38:18"
                         id: 11
@@ -69,26 +73,26 @@ const Board = () => {
                         writer: "user1"
                     */}
 
-                {/*
+          {/*
                     1. 제목 클릭해도 게시물에 들어가도록 설정
                     2. error 해결
 
                      시도 방법
                      1. table 제목 눌렀을 때 link onClick 후
                     */}
-                {boards .map((b) => (
-                    <tr key={b.id}>
-                        <td onClick={() => handleIDClick(b.id)}>{b.id}</td>
-                        <td onClick={() => handleIDClick(b.id)}>{b.title}</td>
-                        <td>{b.writer}</td>
-                        <td>{b.viewCount}</td>
-                        <td>{b.createdAt}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
-    );
+          {boards .map((b) => (
+              <tr key={b.id}>
+                <td onClick={() => goToPage(navigate, `/board/${b.id}`)}>{b.id}</td>
+                <td onClick={() => goToPage(navigate, `/board/${b.id}`)}>{b.title}</td>
+                <td>{b.writer}</td>
+                <td>{b.viewCount}</td>
+                <td>{b.createdAt}</td>
+              </tr>
+          ))}
+          </tbody>
+        </table>
+      </div>
+  );
 };
 
 
