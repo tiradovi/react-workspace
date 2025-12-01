@@ -10,6 +10,9 @@ export 를 제거한다.
 * */
 import axios from "axios";
 
+
+axios.defaults.withCredentials = true;
+
 const API_URL = 'http://localhost:8085'
 
 export const API_URLS = {
@@ -27,7 +30,7 @@ export const API_URLS = {
 // 마이페이지 수정      = fetchMypageEdit
 
 
-export const fetchSignup = async (axios, formData) => {
+export const fetchSignup = async (axios, formData,profileImage) => {
     // 필수 항목 체크
     if (!formData.memberName) {
         alert('이름을 입력해주세요.')
@@ -37,13 +40,23 @@ export const fetchSignup = async (axios, formData) => {
     // body 형태로 전달하기
     // requestBody requestParam
     //    body         header
-    const signupData = {
+    const signupData = new FormData();
+    signupData.append('member', new Blob([JSON.stringify({
         memberName: formData.memberName,
         memberEmail: formData.memberEmail,
-        memberPassword: formData.memberPw,
+        memberPassword: formData.memberPw
+    })], { type: "application/json" }));
+
+    if (profileImage) {
+        signupData.append('memberProfileImage', profileImage);
     }
+
     try {
-        const res = await axios.post(API_URLS.AUTH + "/signup", signupData);
+        const res = await axios.post(API_URLS.AUTH + "/signup", signupData,{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         if (res.data === "success" || res.status === 200) {
             console.log("res.data   : ", res.data);
             console.log("res.status : ", res.status);
@@ -59,9 +72,9 @@ export const fetchSignup = async (axios, formData) => {
     }
 }
 
-export const fetchLoginCheck = (axios, setUser, setLoading) => {
+export const  fetchLoginCheck = async (axios, setUser, setLoading) => {
     // 로그인 상태 확인 함수 기능 만들기
-    axios.get(API_URLS.AUTH + "/check", {
+    await axios.get(API_URLS.AUTH + "/check", {
         withCredentials: true
     })
         .then(res => {
@@ -76,7 +89,7 @@ export const fetchLoginCheck = (axios, setUser, setLoading) => {
         .finally(() => setLoading(false))
 }
 
-export const fetchMypageEdit = (axios, formData, navigate, setIsSubmitting) => {
+export const fetchMypageEdit = async (axios, formData, navigate, setIsSubmitting) => {
     // 수정내용 키:데이터를 모두 담아갈 변수이름
     const updateData = {
         memberName: formData.memberName,
@@ -87,11 +100,39 @@ export const fetchMypageEdit = (axios, formData, navigate, setIsSubmitting) => {
         currentPassword: formData.currentPassword || null,
     }
     try {
-        const res = axios.put(API_URLS.AUTH + "/update", updateData);
-        if (res.data === "success" || res.status === 200) {
+        const res = await axios.put(API_URLS.AUTH + "/update", updateData);
+        if (res.data.success === true || res.status === 200) {
             alert("회원정보가 수정되었습니다.")
-        } else if(res.data ==="wrongPassword"){
-            alert("현재 비밀번호가 일치하지 않습니다.")
+        }else {
+            alert("회원정보 수정에  실패했습니다.")
+        }
+    } catch (err) {
+        alert("회원정보 수정 중 문제가 발생했습니다.")
+    } finally {
+        setIsSubmitting(false);
+    }
+}
+
+export const fetchMypageEditWithProfile = async (axios, formData, profileFile, navigate, setIsSubmitting) => {
+    // 수정내용 키:데이터를 모두 담아갈 변수이름
+    const updateData = {
+        memberName: formData.memberName,
+        memberEmail: formData.memberEmail,
+        memberPhone: formData.memberPhone,
+        memberAddress: formData.memberAddress + formData.memberDetailAddress,
+        newPassword: formData.newPassword || null,
+        currentPassword: formData.currentPassword || null,
+        memberProfileImage: profileFile,
+    }
+    try {
+        const res = await axios.put(API_URLS.AUTH + "/update", updateData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            withCredentials: true
+        });
+        if (res.data.success === true || res.status === 200) {
+            alert("회원정보가 수정되었습니다.")
         } else {
             alert("회원정보 수정에  실패했습니다.")
         }
@@ -102,6 +143,17 @@ export const fetchMypageEdit = (axios, formData, navigate, setIsSubmitting) => {
     }
 }
 
+
+export const getProfileImageUrl = (user) => {
+    if (!user?.memberProfileImage) return '/static/img/profile/default_profile_image.svg';
+    // memberProfileImage 가 전체 URL 인 경우
+    if (user.memberProfileImage.startsWith('http')) return user.memberProfileImage;
+    if (user.memberProfileImage.startsWith('/profile_images/')) {
+        return `${API_URL}${user.memberProfileImage}`;
+    }
+    // 파일명만 있는 경우
+    return `${API_URL}/profile_images/${user.memberProfileImage}`;
+}
 /***********************************************************
  제품 백엔드 관련 함수
  ***********************************************************/

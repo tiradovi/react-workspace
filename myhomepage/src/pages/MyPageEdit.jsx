@@ -2,35 +2,28 @@ import {useNavigate} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
 import {useAuth} from "../context/AuthContext";
 import {handleInputChange} from "../service/commonService";
-import {fetchMypageEdit} from "../service/ApiService";
+import {fetchMypageEdit, fetchMypageEditWithProfile, getProfileImageUrl} from "../service/ApiService";
 import axios from "axios";
-/*
-과제 1: 새로 작성한 비밀번호와 비밀번호 확인이 일치하는지 여부 기능 완성
-*/
+
 const MyPageEdit = () => {
     const navigate = useNavigate();
-    const {user, isAuthenticated} = useAuth();
+    const {user, isAuthenticated , updateUser, loading} = useAuth();
+    console.log("user : " , user);
     // 페이지 리랜더링이 될 때 현재 데이터를 그대로 유지하기위해 사용
     // 새로고침되어도 초기값으로 돌아가는 것이 아니라 현재 상태를 그대로 유지
     const fileInputRef = useRef(null);
-    useEffect(() => {
-        if (!isAuthenticated) {
-            navigate("/login");
-        }
-    }, []);
     const [formData, setFormData] = useState({
         memberName: '',
         memberEmail: '',
         memberPhone: '',
-        memberPostCode: '',
+        memberPostCode:'',
         memberAddress: '',
         memberDetailAddress: '',
         newPassword: '',
         currentPassword: '',
         confirmPassword: '',
     })
-
-    const [profileImage, setProfileImage] = useState(user?.memberProfileImage || '/static/img/profile/default_profile.svg');
+    const [profileImage, setProfileImage] = useState('');
     const [profileFile, setProfileFile] = useState(null);
     const [isUploading, setUploading] = useState(false);
     const [validation, setValidation] = useState({
@@ -45,6 +38,29 @@ const MyPageEdit = () => {
     })
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        // 로딩중이 종료되었고, 백엔드에서 로그인한 결과가 존재하지 않는게 맞다면
+        if (!loading && !isAuthenticated)  navigate("/login");
+    },[loading, isAuthenticated, navigate]);
+
+    useEffect(() =>{
+        if(user) {
+            setFormData(prev => ({
+                ...prev,
+                memberName: user.memberName || '',
+                memberEmail: user.memberEmail || '',
+                memberPhone: user.memberPhone || '',
+                memberAddress: user.memberAddress || ''
+            }));
+            // 프로필 이미지 설정
+            setProfileImage(getProfileImageUrl(user));
+        }
+    },[user?.memberEmail]); // user.memberemail 이 변경될 때만 실행
+
+
+
+
 
     // set 해서 값을 추가하면서 추가된 값이 일치하는가 확인
     // handleInputChange 내부에 formData 활용
@@ -96,30 +112,33 @@ const MyPageEdit = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (formData.currentPassword || formData.newPassword || formData.confirmPassword) {
-            if (!formData.currentPassword) {
+        // 단순히 값이 존재하는지 확인 값이 존재하면 okokokokookokok!!!!!!!
+        // d
+        if(formData.currentPassword || formData.newPassword || formData.confirmPassword) {
+            if(!formData.currentPassword) {
                 alert("현재 비밀번호를 입력해주세요.");
                 return;
             }
-            if (!validation.newPassword) {
+            if(!validation.newPassword ) {
                 alert("새 비밀번호를 입력해주세요.");
                 return;
             }
 
-            if (!validation.confirmPassword) {
+            if(!validation.confirmPassword) {
                 alert("비밀번호 확인을 입력해주세요.");
                 return;
             }
 
         }
         fetchMypageEdit(axios, formData, navigate, setIsSubmitting);
+        // fetchMypageEditWithProfile(axios, formData, profileFile,navigate, setIsSubmitting);
     }
     const handleAddressSearch = () => {
         new window.daum.Postcode({
             oncomplete: function (data) {
                 var addr = '';
 
-                if (data.userSelectedType === 'R') {
+                if( data.userSelectedType === 'R') {
                     addr = data.roadAddress;
                 } else {
                     addr = data.jibunAddress;
@@ -127,7 +146,7 @@ const MyPageEdit = () => {
 
                 setFormData(p => ({
                     ...p,
-                    memberPostCode: data.zonecode,
+                    memberPostCode : data.zonecode,
                     memberAddress: addr
                 }))
 
@@ -148,28 +167,27 @@ const MyPageEdit = () => {
     // 게시물 작성, 수정, 상품 업로드 작성, 수정, 마이페이지 수정 동시 사용
     // 인자값 msg, navigate path
     const handleCancel = () => {
-        if (window.confirm("수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.")) {
+        if(window.confirm("수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.")){
             navigate("/mypage");
         }
     };
     // 프로필 이미지 클릭 시 파일 선택
     const handleProfileClick = () => {
         fileInputRef.current?.click();
-        // 새로고침하여, 프로필이미지 초기화 되는 것이 아니라, 현재상태를 유지한 채로 클릭을 진행한다.
     }
     // 프로필 이미지 파일 선택
-    const handleProfileChange = async (e) => {
+    const handleProfileChange = async  (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if(!file) return;
 
         // 이미지 파일인지 확인 이미지 파일이 아닌게 맞을경우
-        if (!file.type.startsWith("image/")) {
+        if(!file.type.startsWith("image/")){
             alert("이미지 파일만 업로드 가능합니다.");
             return;
         }
 
         // 파일 크기 확인 (5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        if(file.size > 5 * 1024 * 1024) {
             alert("파일 크기는 5MB 를 초과할 수 없습니다.");
             return;
         }
@@ -182,7 +200,7 @@ const MyPageEdit = () => {
         reader.readAsDataURL(file);
         // 파일 저장
         setProfileFile(file);
-        await uploadProfileImage(file);
+        await  uploadProfileImage(file);
     }
     const uploadProfileImage = async (file) => {
         setUploading(true);
@@ -190,28 +208,28 @@ const MyPageEdit = () => {
             const uploadFormData = new FormData();
             uploadFormData.append("file", file);
             uploadFormData.append("memberEmail", user.memberEmail);
-            const res = await axios.post('/api/auth/profile-image', uploadFormData, {
+            const res = await  axios.post('/api/auth/profile-image', uploadFormData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type':'multipart/form-data'
                 }
             });
 
-            if (res.data.success === true) {
+            if(res.data.success === true) {
                 alert("프로필 이미지가 업데이트 되었습니다.");
                 setProfileImage(res.data.imageUrl);
 
-                //updateUser(useAuth 또한 업데이트 진행)
-              /*  if (updateUser) {
-                ...
-                    user, memberProfileImage
-                :
-                    res.data.image
-                }*/
+                // 세션에서 최신 사용자 정보 가져오기
+                const sessionRes = await axios.get("/api/auth/check", {
+                    withCredentials: true
+                });
+
+                if(sessionRes.data.user) {
+                    updateUser(sessionRes.data.user); //전역 user 상태 업데이트
+                }
             }
-        } catch (error) {
+        }catch (error) {
             alert(error);
-            // 실패 시 원래 이미지로 복구
-            setProfileImage(user?.memberProfileImage || '/static/img/profile/default_profile.svg');
+            setProfileImage(user?.memberProfileImage ||'/static/img/default_profile.svg');
         } finally {
             setUploading(false);
         }
@@ -235,10 +253,13 @@ const MyPageEdit = () => {
                     <input type="file" ref={fileInputRef}
                            onChange={handleProfileChange}
                            accept="image/*"
-                           style={{display: 'none'}}
+                           style={{ display: 'none' }}
+                           multiple
                     />
                     <span className="form-hint">이미지를 클릭하여 변경할 수 있습니다.(최대 5MB)</span>
                 </div>
+
+
 
 
                 {/* 이름 / 이메일 ( 읽기 전용) 수정 불가 */}
@@ -294,8 +315,7 @@ const MyPageEdit = () => {
                            value={formData.confirmPassword}
                            onChange={handleCheckChange}
                     />
-                    <span
-                        className={`signUp-message ${validation.confirmPassword && formData.confirmPassword ? 'confirm' : 'error'} `}>
+                    <span className={`signUp-message ${validation.confirmPassword && formData.confirmPassword ? 'confirm' :'error' } `}>
                         {messages.confirmPassword}
                     </span>
                 </label>
@@ -323,7 +343,7 @@ const MyPageEdit = () => {
                                value={formData.memberAddress}
                                placeholder="도로명/지번 주소"
                                onClick={handleAddressSearch}
-                               readOnly/>
+                               readOnly />
                     </div>
                     <div className="signUp-input-area">
                         <input type="text"
@@ -332,7 +352,7 @@ const MyPageEdit = () => {
                                value={formData.memberDetailAddress}
                                placeholder="상세 주소를 입력하세요."
                                onChange={handleCheckChange}
-                               required/>
+                               required />
                     </div>
 
                 </label>
