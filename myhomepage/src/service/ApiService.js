@@ -46,11 +46,9 @@ export const fetchSignup = async (axios, formData,profileImage) => {
         memberEmail: formData.memberEmail,
         memberPassword: formData.memberPw
     })], { type: "application/json" }));
-
     if (profileImage) {
-        signupData.append('memberProfileImage', profileImage);
+        signupData.append('profileImage', profileImage); // ❗ 백엔드와 키 이름 통일
     }
-
     try {
         const res = await axios.post(API_URLS.AUTH + "/signup", signupData,{
             headers: {
